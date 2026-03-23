@@ -1,5 +1,5 @@
 
-from http.client import HTTPException
+from fastapi import HTTPException
 from app.helper.auth import decode_token
 
 

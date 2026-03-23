@@ -1,10 +1,9 @@
 import datetime
-from http.client import HTTPException
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.helper.auth import (hash_password, verify_password, create_token, decode_token, get_current_user)
 from app.db.connect import get_db
-from app.schema.auth_schema import (RegisterRequest, TokenResponse, UserOut)  
+from app.schema.auth_schema import (LoginRequest, RegisterRequest, TokenResponse, UserOut, ResetPasswordRequest)  
 
 # ── Auth routes ───────────────────────────────────────────────
 class AuthService:
@@ -20,11 +19,11 @@ class AuthService:
         token = create_token({"sub": str(user["id"]), "role": user["role"]})
         return {"access_token": token, "role": user["role"]}
     
-    async def login(form: OAuth2PasswordRequestForm = Depends(), db=Depends(get_db)):
+    async def login(body: LoginRequest, db=Depends(get_db)):
         user = await db.fetchrow(
-            "SELECT id, password_hash, role FROM users WHERE email=$1", form.username
+            "SELECT id, password_hash, role FROM users WHERE email=$1", body.email
         )
-        if not user or not verify_password(form.password, user["password_hash"]):
+        if not user or not verify_password(body.password, user["password_hash"]):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         token = create_token({"sub": str(user["id"]), "role": user["role"]})
         return {"access_token": token, "role": user["role"]}

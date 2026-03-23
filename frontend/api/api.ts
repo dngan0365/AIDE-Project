@@ -30,7 +30,6 @@ api.interceptors.response.use(
       } catch {
         Cookies.remove("access_token");
         Cookies.remove("refresh_token");
-        window.location.href = "/login";
       }
     }
     return Promise.reject(err);

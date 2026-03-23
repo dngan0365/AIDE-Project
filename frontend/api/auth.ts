@@ -22,7 +22,7 @@ export async function loginUser(email: string, password: string): Promise<User> 
   );
   Cookies.set("access_token",  data.access_token,  { expires: 1, sameSite: "strict" });
   Cookies.set("refresh_token", data.refresh_token, { expires: 7, sameSite: "strict" });
-  const me = await api.get<User>("/users/me");
+  const me = await api.get<User>("/auth/me");
   return me.data;
 }
  
@@ -34,7 +34,7 @@ export async function logoutUser() {
  
 export async function fetchMe(): Promise<User | null> {
   try {
-    const { data } = await api.get<User>("/users/me");
+    const { data } = await api.get<User>("/auth/me");
     return data;
   } catch {
     return null;
