@@ -40,22 +40,22 @@ export default function LoginPage() {
           src="/login.png"
           alt="background"
           fill
-          className="absolute inset-0 w-full h-full object-cover  opacity-50 scale-100 hover:scale-105 transition-transform duration-[8000ms]"
+          className="absolute inset-0 w-full h-full object-cover  opacity-50 dark:opacity-30 scale-100 hover:scale-105 transition-transform duration-[8000ms]"
         />
       </div>
 
       {/* ── RIGHT PANEL ── */}
-      <div className="flex flex-1 flex-col justify-center items-center px-6 py-12 bg-white lg:max-w-[520px]">
+      <div className="flex flex-1 flex-col justify-center items-center px-6 py-12 bg-white dark:bg-gray-950 lg:max-w-[520px]">
         <div className="w-full max-w-sm">
 
           {/* Header */}
           <div className="mb-8">
-            <div className="inline-flex items-center gap-1.5 bg-[#4ad4e4]/10 text-[#1ba8b8] text-xs font-semibold px-3 py-1.5 rounded-full mb-4 tracking-wide uppercase">
+            <div className="inline-flex items-center gap-1.5 bg-[#4ad4e4]/10 dark:text-[#4ad4e4] text-[#1ba8b8] text-xs font-semibold px-3 py-1.5 rounded-full mb-4 tracking-wide uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-[#4ad4e4] animate-pulse" />
               Welcome back
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Sign in to your account</h1>
-            <p className="text-gray-500 text-sm mt-2">Enter your credentials to continue where you left off.</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Sign in to your account</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Enter your credentials to continue where you left off.</p>
           </div>
 
           {/* Form */}
@@ -63,15 +63,15 @@ export default function LoginPage() {
 
             {/* Email */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">Email address</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400
-                  bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4ad4e4]/50 focus:border-[#4ad4e4]
+                className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                  bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#4ad4e4]/50 focus:border-[#4ad4e4]
                   transition-all duration-200"
               />
             </div>
@@ -79,7 +79,7 @@ export default function LoginPage() {
             {/* Password */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Password</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
                 <Link href="/forgot-password" className="text-xs text-[#1ba8b8] hover:text-[#4ad4e4] transition-colors">
                   Forgot password?
                 </Link>
@@ -90,15 +90,15 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400
-                  bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4ad4e4]/50 focus:border-[#4ad4e4]
+                className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                  bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#4ad4e4]/50 focus:border-[#4ad4e4]
                   transition-all duration-200"
               />
             </div>
 
             {/* Error */}
             {error && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-2.5 rounded-xl">
+              <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 text-sm px-4 py-2.5 rounded-xl">
                 <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
@@ -129,16 +129,16 @@ export default function LoginPage() {
 
           {/* Divider */}
           <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-xs text-gray-400">or</span>
-            <div className="flex-1 h-px bg-gray-100" />
+            <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
+            <span className="text-xs text-gray-400 dark:text-gray-600">or</span>
+            <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
           </div>
 
           {/* Google OAuth */}
           <button
             type="button"
-            className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl border border-gray-200
-              text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
+            className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700
+              text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -150,7 +150,7 @@ export default function LoginPage() {
           </button>
 
           {/* Register link */}
-          <p className="mt-6 text-sm text-center text-gray-500">
+          <p className="mt-6 text-sm text-center text-gray-500 dark:text-gray-400">
             Don&apos;t have an account?{" "}
             <Link href="/register" className="text-[#1ba8b8] font-medium hover:text-[#4ad4e4] transition-colors">
               Create one →
