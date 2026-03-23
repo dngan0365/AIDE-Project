@@ -11,7 +11,7 @@ s3 = boto3.client(
     "s3",
     aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
     aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-    region_name=settings.S3_REGION
+    region_name=settings.S3_REGION_NAME
 )
 
 @router.post("/image")
@@ -34,7 +34,7 @@ async def upload_image(file: UploadFile = File(...)):
         )
 
         # Generate URL
-        file_url = f"https://{settings.S3_BUCKET}.s3.{settings.S3_REGION}.amazonaws.com/{key}"
+        file_url = f"https://{settings.S3_BUCKET}.s3.{settings.S3_REGION_NAME}.amazonaws.com/{key}"
 
         return {
             "filename": file.filename,
