@@ -1,111 +1,70 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { FaMapMarkerAlt, FaUser, FaSignOutAlt, FaCalendar } from 'react-icons/fa';
-import { Table2, LayoutDashboard } from "lucide-react"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Settings, BarChart3, Users, FileText, Film, CircleCheckBig, CalendarCheck2 } from "lucide-react";
 
-const Sidebar = () => {
-  const { user, logout } = useAuth();
+const navItems = [
+  { href: "/admin", label: "Dashboard", icon: BarChart3, exact: true },
+  { href: "/admin/story", label: "Story", icon: FileText, exact: false },
+  { href: "/admin/scene", label: "Scene", icon: Film, exact: false },
+  { href: "/admin/challenge", label: "Challenge", icon: CircleCheckBig, exact: false },
+  { href: "/admin/event", label: "Event", icon: CalendarCheck2, exact: false }
+];
+
+export default function AdminSidebar() {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
-  const menuItems = [
-    { 
-      path: '/admin/dashboard', 
-      name: 'dashboard', 
-      icon: <LayoutDashboard className="text-lg" /> 
-    },
-    { 
-      path: '/admin/location', 
-      name: 'locations', 
-      icon: <FaMapMarkerAlt className="text-lg" /> 
-    },
-    { 
-      path: '/admin/event', 
-      name: 'events', 
-      icon: <FaCalendar className="text-lg" /> 
-    },
-    { 
-      path: '/admin/profile', 
-      name: 'profile', 
-      icon: <FaUser className="text-lg" /> 
-    },
-  ];
-  
-  const handleLogout = async () => {
-    await logout();
-  };
 
   return (
-    <div className={`${isCollapsed ? 'w-20' : 'w-64'} sticky h-100vh bg-gray-800 text-white transition-width duration-300 ease-in-out`}>
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-          {!isCollapsed && <h1 className="text-xl font-bold">Admin Panel</h1>}
-          <button 
-            title="Toggle Sidebar"
-            onClick={toggleSidebar} 
-            className={`${isCollapsed ? 'mx-auto' : ''} p-2 rounded-full hover:bg-gray-700`}
-          >
-            <Table2 className="h-6 w-6" />
-          </button>
+    <aside className="w-52 sm:w-60 min-h-screen bg-[#f5feff] dark:bg-[#0a0c11] border-r border-black/10 dark:border-[#1e2130] flex flex-col sticky top-0 h-screen transition-colors duration-300">
+      {/* Logo */}
+      <div className="px-4 sm:px-6 py-5 sm:py-7 border-b border-black/10 dark:border-[#1e2130]">
+        <div
+          style={{ fontFamily: "'Syne', sans-serif" }}
+          className="text-base sm:text-lg font-800 text-primary tracking-tight leading-none"
+        >
+          ADMIN
         </div>
-        
-        {/* Navigation */}
-        <div className="flex-1 py-6">
-          <ul className="space-y-2 px-3">
-            {menuItems.map((item) => (
-              <li key={item.path}>
-                <Link 
-                  href={item.path}
-                  className={`flex items-center p-3 rounded-lg ${
-                    pathname === item.path ? 'bg-blue-600' : 'hover:bg-gray-700'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    {item.icon}
-                    {!isCollapsed && <span className="ml-3">{item.name}</span>}
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        
-        {/* User info & logout */}
-        <div className="p-4 border-t border-gray-700">
-          {user && (
-            <div className={`flex ${isCollapsed ? 'flex-col items-center' : 'items-center'} mb-4`}>
-              <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
-                  <span className="text-lg">{(user.name || user.email || 'U').charAt(0)}</span>
-              </div>
-              {!isCollapsed && (
-                <div className="ml-3 overflow-hidden">
-                  <p className="text-sm font-medium truncate">{user.name || 'Admin User'}</p>
-                  <p className="text-xs text-gray-400 truncate">{user.email}</p>
-                </div>
-              )}
-            </div>
-          )}
-          
-          <button 
-            onClick={handleLogout}
-            className={`w-full flex items-center p-3 rounded-lg hover:bg-gray-700 text-red-400 ${isCollapsed ? 'justify-center' : ''}`}
-          >
-            <FaSignOutAlt />
-            {!isCollapsed && <span className="ml-3">Log out</span>}
-          </button>
+        <div className="text-[10px] text-black/30 dark:text-[#4a5060] mt-1 tracking-widest uppercase">
+          Control Panel
         </div>
       </div>
-    </div>
-  );
-};
 
-export default Sidebar;
+      {/* Nav */}
+      <nav className="flex-1 px-2 sm:px-3 py-4 sm:py-5 space-y-1">
+        {navItems.map(({ href, label, icon: Icon, exact }) => {
+          const active = exact ? pathname === href : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-2.5 sm:gap-3 px-3 py-2 sm:py-2.5 rounded text-xs sm:text-sm transition-all duration-150 group ${
+                active
+                  ? "bg-[#4ad4e4]/10 text-primary border border-[#4ad4e4]/25"
+                  : "text-black/40 dark:text-[#6b7280] hover:text-black/80 dark:hover:text-[#e8e6e1] hover:bg-black/5 dark:hover:bg-[#1a1d2a] border border-transparent"
+              }`}
+            >
+              <Icon
+                size={14}
+                className={`sm:w-[15px] sm:h-[15px] ${
+                  active
+                    ? "text-[#4ad4e4]"
+                    : "text-black/25 dark:text-[#4a5060] group-hover:text-black/50 dark:group-hover:text-[#9ca3af]"
+                }`}
+              />
+              <span className="tracking-wide">{label}</span>
+              {active && (
+                <span className="ml-auto w-1 h-1 rounded-full bg-[#4ad4e4]" />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-black/10 dark:border-[#1e2130]">
+        <div className="text-[10px] text-black/15 dark:text-[#2a2f3d] tracking-widest uppercase">v1.0.0</div>
+      </div>
+    </aside>
+  );
+}

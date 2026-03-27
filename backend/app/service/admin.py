@@ -6,6 +6,7 @@ from app.schema.auth_schema import UpdateRoleRequest
 from fastapi import HTTPException
 
 class AdminService:
+    # Users
     async def list_users(admin=Depends(require_admin), db=Depends(get_db)):
         rows = await db.fetch(
             "SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC"
@@ -23,3 +24,4 @@ class AdminService:
     async def delete_user(user_id: str, admin=Depends(require_admin), db=Depends(get_db)):
         await db.execute("DELETE FROM users WHERE id=$1", user_id)
 
+    # Cultures

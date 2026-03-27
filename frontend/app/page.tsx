@@ -95,7 +95,7 @@ export default function Home() {
 
             <h2 className="font-display font-black mt-4 mb-1 text-[clamp(1.8rem,3.5vw,2.8rem)] leading-[1.15] text-[#0e1f24] dark:text-[#d4f1f5]">
               Welcome to{" "}
-              <span className="text-[#4ad4e4]">AIASEAN</span>
+              <span className="text-[#4ad4e4]">NarratAIve</span>
             </h2>
 
             <div className="w-14 h-[2px] bg-gradient-to-r from-[#4ad4e4] to-[#77DAE6] rounded my-4" />
@@ -147,7 +147,7 @@ export default function Home() {
           </span>
 
           <h3 className="font-display font-bold mt-4 mb-2 text-[clamp(1.4rem,2.5vw,2rem)] text-[#0e1f24] dark:text-[#d4f1f5]">
-            Ten Nations, One Vision
+            Elevent Nations, One Vision
           </h3>
 
           <div className="w-16 h-[3px] bg-gradient-to-r from-[#4ad4e4] to-[#77DAE6] rounded-sm mx-auto mb-6" />
@@ -175,6 +175,16 @@ export default function Home() {
               </span>
             ))}
           </div>
+        </div>
+
+        {/* Map */}
+        <div className="relative w-full h-[800px] p-2 mb-2">
+          <Image
+            src="/ASEANmap.svg"
+            alt="ASEAN Map"
+            fill
+            className="object-contain"
+          />
         </div>
       </div>
       {/* Event List */}

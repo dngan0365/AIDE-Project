@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, Suspense } from "react";
@@ -35,7 +36,7 @@ function ResetForm() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-[90vh]">
 
       {/* ── LEFT PANEL ── */}
       <div className="hidden lg:flex lg:flex-1 relative overflow-hidden">
@@ -43,7 +44,7 @@ function ResetForm() {
           src="/login.png"
           alt="background"
           fill
-          className="absolute inset-0 w-full h-full object-cover opacity-50 dark:opacity-30 scale-100 hover:scale-105 transition-transform duration-[8000ms]"
+          className="absolute inset-0 w-full h-full object-cover scale-100 hover:scale-105 transition-transform duration-[8000ms]"
         />
       </div>
 
@@ -87,7 +88,7 @@ function ResetForm() {
                   Password reset
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Set a new password</h1>
-                <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Choose a strong password you haven't used before.</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Choose a strong password you haven&apos;t used before.</p>
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">

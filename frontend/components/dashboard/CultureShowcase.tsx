@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -280,7 +281,7 @@ export default function CultureShowcase() {
                 }
             `}
             >
-            <Image
+            <img
                 src={c.flag}
                 alt={c.country}
                 width={18}
@@ -299,12 +300,11 @@ export default function CultureShowcase() {
             {/* ═══ LEFT SIDEBAR — culture list ═══ */}
             <div className="lg:w-[240px] xl:w-[260px] flex-shrink-0 border-b lg:border-b-0 lg:border-r border-[rgba(74,212,228,0.12)] p-5 flex flex-col gap-1.5">
                 <p className="font-body text-[0.65rem] tracking-[0.18em] uppercase text-[#4ad4e4] mb-3 px-1 flex items-center gap-1.5">
-                <Image
+                <img
                     src={country.flag}
                     alt={country.country}
                     width={18}
-                    height = {20}
-                    style={{ height: "auto" }}
+                    height={20}
                     className="rounded-sm object-cover"
                 />
                 {country.country}
@@ -367,14 +367,12 @@ export default function CultureShowcase() {
               >
                 {/* image fades on transition */}
                 <div className={`absolute inset-0 transition-opacity duration-300 ${transitioning ? "opacity-0" : "opacity-100"}`}>
-                  <Image
+                  <img
                     key={`${activeCountry}-${activeCulture}`}
                     src={culture.image}
                     alt={culture.name}
-                    fill
-                    className="object-cover cs-img-enter"
-                    sizes="(max-width:1024px) 100vw, 72vw"
-                  />
+                    className="w-full h-full object-cover cs-img-enter"
+                    />
                 </div>
 
                 {/* Colour wash */}
@@ -405,7 +403,7 @@ export default function CultureShowcase() {
                         style={{ background: country.accent }}
                       />
                     </div>
-                    <Image
+                    <img
                     src={country.flag}
                     alt={country.country}
                     width={52}

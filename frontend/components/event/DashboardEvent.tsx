@@ -1,166 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { CalendarDays, Clock, ChevronRight, ChevronLeft } from 'lucide-react';
+import { CalendarDays, Clock, ChevronRight, ChevronLeft, Loader2, AlertCircle } from 'lucide-react';
+import {
+  listEvents,
+  listActiveEvents,
+  type Event,
+} from '@/api/event'; // adjust import path as needed
 
-// ── Types ──────────────────────────────────────────────────────────────────
-interface Event {
-  id: number;
-  name: string;
-  description: string;
-  coverImage: string;
-  startDate: string;
-  endDate: string;
-  country: string;
-  category: string;
-}
-
-// ── Mock Data ──────────────────────────────────────────────────────────────
-const MOCK_EVENTS: Record<string, Event[]> = {
-  Jan: [
-    {
-      id: 1,
-      name: "Tết Nguyên Đán — Lunar New Year",
-      description: "Vietnam's most important festival, celebrating the arrival of spring and the new lunar year with family reunions, fireworks, and traditional customs.",
-      coverImage: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=80",
-      startDate: "2025-01-29T08:00:00",
-      endDate: "2025-02-04T23:59:00",
-      country: "🇻🇳 Vietnam",
-      category: "Cultural",
-    },
-    {
-      id: 2,
-      name: "Chiang Mai Flower Festival",
-      description: "A stunning celebration of northern Thailand's blooming season featuring elaborate floral floats, beauty pageants, and cultural performances.",
-      coverImage: "https://images.unsplash.com/photo-1470246973918-29a93221c455?w=600&q=80",
-      startDate: "2025-01-31T09:00:00",
-      endDate: "2025-02-02T20:00:00",
-      country: "🇹🇭 Thailand",
-      category: "Festival",
-    },
-    {
-      id: 3,
-      name: "Singapore Art Week",
-      description: "Southeast Asia's premier visual arts event showcasing over 130 art events across galleries, museums, and public spaces island-wide.",
-      coverImage: "https://images.unsplash.com/photo-1578926288207-a90a5366759d?w=600&q=80",
-      startDate: "2025-01-17T10:00:00",
-      endDate: "2025-01-26T22:00:00",
-      country: "🇸🇬 Singapore",
-      category: "Art",
-    },
-    {
-      id: 4,
-      name: "Ubud Writers & Readers Festival",
-      description: "Bringing together extraordinary writers and thinkers from around the world to the spiritual heart of Bali.",
-      coverImage: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&q=80",
-      startDate: "2025-01-22T08:00:00",
-      endDate: "2025-01-26T18:00:00",
-      country: "🇮🇩 Indonesia",
-      category: "Literature",
-    },
-    {
-      id: 5,
-      name: "Kuala Lumpur Fashion Week",
-      description: "Malaysia's biggest fashion event showcasing local and regional designers on the international stage.",
-      coverImage: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&q=80",
-      startDate: "2025-01-20T10:00:00",
-      endDate: "2025-01-24T21:00:00",
-      country: "🇲🇾 Malaysia",
-      category: "Fashion",
-    },
-    {
-      id: 6,
-      name: "Pahiyas Festival Preparations",
-      description: "Communities across Lucban begin the vibrant preparations for the thanksgiving harvest festival honoring San Isidro Labrador.",
-      coverImage: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&q=80",
-      startDate: "2025-01-10T06:00:00",
-      endDate: "2025-01-10T20:00:00",
-      country: "🇵🇭 Philippines",
-      category: "Cultural",
-    },
-  ],
-  Feb: [
-    {
-      id: 7,
-      name: "Hội An Lantern Festival",
-      description: "Every full moon, Hoi An's Ancient Town transforms into a dreamscape of silk lanterns and floating candles on the Thu Bon River.",
-      coverImage: "https://images.unsplash.com/photo-1569523758965-95e6e91f0e8d?w=600&q=80",
-      startDate: "2025-02-12T18:00:00",
-      endDate: "2025-02-12T23:00:00",
-      country: "🇻🇳 Vietnam",
-      category: "Cultural",
-    },
-    {
-      id: 8,
-      name: "Bangkok International Film Festival",
-      description: "Celebrating cinematic excellence from Asia and the world, screening over 200 films across Bangkok's premier venues.",
-      coverImage: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&q=80",
-      startDate: "2025-02-20T10:00:00",
-      endDate: "2025-02-28T22:00:00",
-      country: "🇹🇭 Thailand",
-      category: "Film",
-    },
-    {
-      id: 9,
-      name: "Bali Spirit Festival",
-      description: "An annual yoga, dance, and world music festival set amid the sacred landscape of Ubud, drawing wellness seekers worldwide.",
-      coverImage: "https://images.unsplash.com/photo-1545389336-cf090694435e?w=600&q=80",
-      startDate: "2025-02-26T07:00:00",
-      endDate: "2025-03-02T20:00:00",
-      country: "🇮🇩 Indonesia",
-      category: "Wellness",
-    },
-  ],
-  Mar: [
-    {
-      id: 10,
-      name: "Hue Festival",
-      description: "A biennial celebration of Vietnam's imperial heritage featuring royal court music, traditional theatre, and spectacular night performances.",
-      coverImage: "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=600&q=80",
-      startDate: "2025-03-22T08:00:00",
-      endDate: "2025-03-28T23:00:00",
-      country: "🇻🇳 Vietnam",
-      category: "Heritage",
-    },
-    {
-      id: 11,
-      name: "Songkran Water Festival Preview",
-      description: "Early celebrations of Thailand's traditional New Year water festival in Chiang Mai, the most festive city for Songkran.",
-      coverImage: "https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=600&q=80",
-      startDate: "2025-03-30T10:00:00",
-      endDate: "2025-04-15T22:00:00",
-      country: "🇹🇭 Thailand",
-      category: "Festival",
-    },
-    {
-      id: 12,
-      name: "Singapore Food Festival",
-      description: "A month-long gastronomic celebration showcasing Singapore's diverse hawker culture and world-class culinary talent.",
-      coverImage: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80",
-      startDate: "2025-03-14T11:00:00",
-      endDate: "2025-03-30T22:00:00",
-      country: "🇸🇬 Singapore",
-      category: "Food",
-    },
-  ],
-};
-
-// Fill remaining months with placeholder events
-const PLACEHOLDER_EVENTS: Event[] = [
-  {
-    id: 99,
-    name: "ASEAN Cultural Exchange",
-    description: "An inter-regional celebration of Southeast Asian arts, crafts, and traditions bringing together all 10 ASEAN nations.",
-    coverImage: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&q=80",
-    startDate: "2025-06-15T09:00:00",
-    endDate: "2025-06-20T21:00:00",
-    country: "🌏 ASEAN",
-    category: "Cultural",
-  },
-];
-
+// ── Constants ──────────────────────────────────────────────────────────────
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const ITEMS_PER_PAGE = 6;
 
@@ -176,34 +25,126 @@ const CATEGORY_COLORS: Record<string, string> = {
   Food:       'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
+// ── Helpers ────────────────────────────────────────────────────────────────
+function getMonthIndex(monthShort: string): number {
+  return MONTHS.indexOf(monthShort);
+}
+
+/**
+ * Filter a flat Event[] list to only those whose started_at falls in the given month (0-based)
+ * within the current year.
+ */
+function filterByMonth(events: Event[], monthIndex: number): Event[] {
+  return events.filter((e) => {
+    const d = new Date(e.started_at);
+    return d.getMonth() === monthIndex;
+  });
+}
+
+/**
+ * Return the set of month indices that contain at least one event.
+ */
+function monthsWithEvents(events: Event[]): Set<number> {
+  const s = new Set<number>();
+  events.forEach((e) => s.add(new Date(e.started_at).getMonth()));
+  return s;
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+// Derive a display category from an event if not present
+function getCategory(event: Event): string {
+  return 'Cultural'; // default fallback — extend if your API returns a category field
+}
+
 // ── Component ──────────────────────────────────────────────────────────────
 export default function DashboardEvent() {
-  const currentMonth = new Date().toLocaleString('en-US', { month: 'short' });
-  const [activeMonth, setActiveMonth] = useState(currentMonth);
+  const currentMonthIndex = new Date().getMonth();
+  const [activeMonth, setActiveMonth] = useState(MONTHS[currentMonthIndex]);
+
+  // All events for the year (used to build month dots)
+  const [yearEvents, setYearEvents] = useState<Event[]>([]);
+  // Events for the currently selected month
+  const [monthEvents, setMonthEvents] = useState<Event[]>([]);
+
+  const [loadingYear, setLoadingYear] = useState(true);
+  const [loadingMonth, setLoadingMonth] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [currentPage, setCurrentPage] = useState(1);
 
-  const allEvents = MOCK_EVENTS[activeMonth] ?? PLACEHOLDER_EVENTS;
-  const totalPages = Math.ceil(allEvents.length / ITEMS_PER_PAGE);
-  const paginatedEvents = allEvents.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+  // ── Fetch all year events once (for month dot indicators) ──
+  useEffect(() => {
+    setLoadingYear(true);
+    setError(null);
+    listEvents()
+      .then((data) => {
+        setYearEvents(data);
+        // Seed the initial month view from the already-fetched data
+        setMonthEvents(filterByMonth(data, currentMonthIndex));
+      })
+      .catch(() => setError('Failed to load events. Please try again.'))
+      .finally(() => setLoadingYear(false));
+  }, [currentMonthIndex]);
+
+  // ── Fetch events for selected month ──
+  const loadMonth = useCallback(
+    async (month: string) => {
+      const idx = getMonthIndex(month);
+
+      // Optimistically filter from the cached year list first
+      setMonthEvents(filterByMonth(yearEvents, idx));
+      setCurrentPage(1);
+
+      // Then fetch fresh data for that month
+      setLoadingMonth(true);
+      setError(null);
+      try {
+        const all = await listEvents();
+        setYearEvents(all); // keep year cache fresh
+        setMonthEvents(filterByMonth(all, idx));
+      } catch {
+        setError('Failed to load events for this month.');
+      } finally {
+        setLoadingMonth(false);
+      }
+    },
+    [yearEvents]
   );
 
   const handleMonthChange = (month: string) => {
     setActiveMonth(month);
-    setCurrentPage(1);
+    loadMonth(month);
   };
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  // ── Pagination ──
+  const totalPages = Math.ceil(monthEvents.length / ITEMS_PER_PAGE);
+  const paginatedEvents = monthEvents.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
-  const formatTime = (dateStr: string) =>
-    new Date(dateStr).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const activeDots = monthsWithEvents(yearEvents);
+  const activeMonthIndex = getMonthIndex(activeMonth);
 
+  // ── Render ──
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
 
-      {/* ── Header ── */}
+      {/* Header */}
       <header className="text-center mb-10">
         <span className="font-body text-[0.7rem] tracking-[0.18em] uppercase px-3 py-[3px] border border-[#4ad4e4] text-[#4ad4e4] rounded-full">
           Upcoming
@@ -216,12 +157,11 @@ export default function DashboardEvent() {
         </p>
       </header>
 
-      {/* ── Month Selector ── */}
+      {/* Month Selector */}
       <div className="bg-[#f0fbfc] dark:bg-[#071318] border border-[rgba(74,212,228,0.2)] rounded-2xl p-5 mb-10">
-        {/* Month buttons */}
         <div className="grid grid-cols-6 md:grid-cols-12 gap-2">
-          {MONTHS.map((month) => {
-            const hasEvents = !!MOCK_EVENTS[month]?.length;
+          {MONTHS.map((month, idx) => {
+            const hasEvents = activeDots.has(idx);
             const isActive = activeMonth === month;
             return (
               <button
@@ -245,9 +185,9 @@ export default function DashboardEvent() {
         {/* Timeline */}
         <div className="relative flex items-center justify-between mt-5 px-3">
           <div className="absolute h-[2px] bg-gradient-to-r from-[#4ad4e4]/30 via-[#4ad4e4] to-[#4ad4e4]/30 w-full left-0" />
-          {MONTHS.map((month) => (
+          {MONTHS.map((month, idx) => (
             <button
-            aria-label='Button'
+              aria-label={`Select ${month}`}
               key={`dot-${month}`}
               onClick={() => handleMonthChange(month)}
               className={`w-3 h-3 rounded-full z-10 transition-all duration-200 ${
@@ -260,80 +200,131 @@ export default function DashboardEvent() {
         </div>
       </div>
 
-      {/* ── Month Label ── */}
+      {/* Month Label */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-display font-bold text-[1.4rem] text-[#0e1f24] dark:text-[#d4f1f5]">
           {activeMonth} Events
-          <span className="ml-3 font-body font-normal text-sm text-[#4ad4e4]">
-            {allEvents.length} {allEvents.length === 1 ? 'event' : 'events'}
-          </span>
+          {!loadingMonth && (
+            <span className="ml-3 font-body font-normal text-sm text-[#4ad4e4]">
+              {monthEvents.length} {monthEvents.length === 1 ? 'event' : 'events'}
+            </span>
+          )}
         </h2>
+
+        {loadingMonth && (
+          <Loader2 className="w-5 h-5 text-[#4ad4e4] animate-spin" />
+        )}
       </div>
 
-      {/* ── Events Grid ── */}
-      {paginatedEvents.length > 0 ? (
+      {/* Error State */}
+      {error && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 mb-6">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+          <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+          <button
+            onClick={() => loadMonth(activeMonth)}
+            className="ml-auto text-sm text-red-600 dark:text-red-400 underline hover:no-underline"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Initial Loading Skeleton */}
+      {loadingYear && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {paginatedEvents.map((event, i) => (
-            <Link
-              key={event.id}
-              href={`/events/${event.id}`}
-              className="group block bg-white dark:bg-[#0a1e24] rounded-2xl overflow-hidden border border-[rgba(74,212,228,0.15)] dark:border-[rgba(74,212,228,0.1)] shadow-sm hover:shadow-[0_8px_30px_rgba(74,212,228,0.15)] dark:hover:shadow-[0_8px_30px_rgba(74,212,228,0.12)] transition-all duration-300 hover:-translate-y-1"
-              style={{ animationDelay: `${i * 60}ms` }}
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-2xl overflow-hidden border border-[rgba(74,212,228,0.15)] bg-white dark:bg-[#0a1e24] animate-pulse"
             >
-              {/* Cover image */}
-              <div className="relative h-52 overflow-hidden bg-[#071318]">
-                <Image
-                  src={event.coverImage}
-                  alt={event.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                {/* gradient fade */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                {/* Category pill */}
-                <span className={`absolute top-3 left-3 text-[0.65rem] font-medium tracking-wide uppercase px-2.5 py-1 rounded-full ${CATEGORY_COLORS[event.category] ?? CATEGORY_COLORS.Cultural}`}>
-                  {event.category}
-                </span>
-                {/* Country badge */}
-                <span className="absolute bottom-3 left-3 text-[0.75rem] text-white/90 font-body">
-                  {event.country}
-                </span>
+              <div className="h-52 bg-[#e0f7fa] dark:bg-[#0d2b33]" />
+              <div className="p-5 space-y-3">
+                <div className="h-4 bg-[#e0f7fa] dark:bg-[#0d2b33] rounded w-3/4" />
+                <div className="h-3 bg-[#e0f7fa] dark:bg-[#0d2b33] rounded w-1/2" />
+                <div className="h-3 bg-[#e0f7fa] dark:bg-[#0d2b33] rounded w-full" />
+                <div className="h-3 bg-[#e0f7fa] dark:bg-[#0d2b33] rounded w-5/6" />
               </div>
-
-              {/* Content */}
-              <div className="p-5">
-                <h3 className="font-display font-bold text-[1.05rem] leading-snug text-[#0e1f24] dark:text-[#d4f1f5] group-hover:text-[#4ad4e4] dark:group-hover:text-[#4ad4e4] transition-colors line-clamp-2 mb-2">
-                  {event.name}
-                </h3>
-
-                {/* Dates */}
-                <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3">
-                  <span className="inline-flex items-center gap-1.5 text-[0.78rem] text-[#2e5a6a] dark:text-[#5ba8b8]">
-                    <CalendarDays className="w-3.5 h-3.5 text-[#4ad4e4]" />
-                    {formatDate(event.startDate)}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-[0.78rem] text-[#2e5a6a] dark:text-[#5ba8b8]">
-                    <Clock className="w-3.5 h-3.5 text-[#4ad4e4]" />
-                    Ends {formatTime(event.endDate)}
-                  </span>
-                </div>
-
-                {/* Description */}
-                <p
-                  className="font-body text-[0.88rem] text-[#1e3a42] dark:text-[#8ecfda] leading-relaxed line-clamp-2 mb-4"
-                  dangerouslySetInnerHTML={{ __html: event.description }}
-                />
-
-                {/* CTA */}
-                <div className="flex items-center justify-end text-[0.8rem] text-[#4ad4e4] font-medium gap-1 group-hover:gap-2 transition-all">
-                  View Details
-                  <ChevronRight className="w-4 h-4" />
-                </div>
-              </div>
-            </Link>
+            </div>
           ))}
         </div>
-      ) : (
+      )}
+
+      {/* Events Grid */}
+      {!loadingYear && !error && paginatedEvents.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {paginatedEvents.map((event, i) => {
+            const category = getCategory(event);
+            return (
+              <Link
+                key={event.id}
+                href={`/event/${event.id}`}
+                className="group block bg-white dark:bg-[#0a1e24] rounded-2xl overflow-hidden border border-[rgba(74,212,228,0.15)] dark:border-[rgba(74,212,228,0.1)] shadow-sm hover:shadow-[0_8px_30px_rgba(74,212,228,0.15)] dark:hover:shadow-[0_8px_30px_rgba(74,212,228,0.12)] transition-all duration-300 hover:-translate-y-1"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                {/* Cover image */}
+                <div className="relative w-full h-52 overflow-hidden bg-[#071318]">
+                  {event.img_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={event.img_url}
+                      alt={event.title}
+                      className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    /* Placeholder when no image */
+                    <div className="w-full h-full bg-gradient-to-br from-[#0d2b33] to-[#071318] flex items-center justify-center">
+                      <CalendarDays className="w-12 h-12 text-[#4ad4e4]/30" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  {/* Category pill */}
+                  <span
+                    className={`absolute top-3 left-3 text-[0.65rem] font-medium tracking-wide uppercase px-2.5 py-1 rounded-full ${
+                      CATEGORY_COLORS[category] ?? CATEGORY_COLORS.Cultural
+                    }`}
+                  >
+                    {category}
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div className="p-5">
+                  <h3 className="font-display font-bold text-[1.05rem] leading-snug text-[#0e1f24] dark:text-[#d4f1f5] group-hover:text-[#4ad4e4] dark:group-hover:text-[#4ad4e4] transition-colors line-clamp-2 mb-2">
+                    {event.title}
+                  </h3>
+
+                  {/* Dates */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3">
+                    <span className="inline-flex items-center gap-1.5 text-[0.78rem] text-[#2e5a6a] dark:text-[#5ba8b8]">
+                      <CalendarDays className="w-3.5 h-3.5 text-[#4ad4e4]" />
+                      {formatDate(event.started_at)}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-[0.78rem] text-[#2e5a6a] dark:text-[#5ba8b8]">
+                      <Clock className="w-3.5 h-3.5 text-[#4ad4e4]" />
+                      Ends {formatTime(event.ended_at)}
+                    </span>
+                  </div>
+
+                  {/* Description */}
+                  <p className="font-body text-[0.88rem] text-[#1e3a42] dark:text-[#8ecfda] leading-relaxed line-clamp-2 mb-4">
+                    {event.description}
+                  </p>
+
+                  {/* CTA */}
+                  <div className="flex items-center justify-end text-[0.8rem] text-[#4ad4e4] font-medium gap-1 group-hover:gap-2 transition-all">
+                    View Details
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loadingYear && !loadingMonth && !error && monthEvents.length === 0 && (
         <div className="text-center py-20">
           <p className="font-body text-[#2e5a6a] dark:text-[#5ba8b8] text-lg">
             No events scheduled for {activeMonth}.
@@ -342,7 +333,7 @@ export default function DashboardEvent() {
         </div>
       )}
 
-      {/* ── Pagination ── */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-10">
           <button

@@ -23,7 +23,7 @@ class UserOut(BaseModel):
     role: str
     avatar_url: Optional[str] = None
     preferred_language: Optional[str] = None
-    created_at: str
+    created_at:datetime
  
 class UpdateRoleRequest(BaseModel):
     role: str
@@ -31,3 +31,8 @@ class UpdateRoleRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
+class ForgotPasswordRequest(BaseModel):
+    email: str
+class RefreshRequest(BaseModel):
+    refresh_token: str
+    

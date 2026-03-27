@@ -60,7 +60,7 @@ async def upload_file(file: UploadFile = File(...)):
         )
 
         # Generate URL
-        file_url = f"https://{settings.S3_BUCKET}.s3.{settings.S3_REGION}.amazonaws.com/{key}"
+        file_url = f"https://{settings.S3_BUCKET}.s3.{settings.S3_REGION_NAME}.amazonaws.com/{key}"
 
         return {
             "filename": file.filename,

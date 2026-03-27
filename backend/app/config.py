@@ -15,6 +15,13 @@ class Settings(BaseSettings):
     S3_BUCKET: str = os.getenv("S3_BUCKET")
     S3_REGION_NAME: str = os.getenv("S3_REGION_NAME")
     RESEND_API_KEY: str = os.getenv("RESEND_API_KEY")
-    
+    RESEND_FROM_EMAIL: str = os.getenv("RESEND_FROM_EMAIL")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL")
+    MAIL_FROM: str = os.getenv("MAIL_FROM")
+    MAIL_HOST: str = os.getenv("MAIL_HOST")
+    MAIL_PORT: int = int(os.getenv("MAIL_PORT"))
+    MAIL_USERNAME: str = os.getenv("MAIL_USERNAME")
+    MAIL_PASSWORD: str = os.getenv("MAIL_PASSWORD")
+
 settings = Settings()
 TOKEN_EXPIRE = settings.ACCESS_TOKEN_EXPIRE_MINUTES
