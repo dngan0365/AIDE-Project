@@ -17,13 +17,12 @@ import {
 
 const Navbar = () => {
   const pathName = usePathname();
-  const locale = pathName.split('/')[1];
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { user, loading, isAdmin, logout } = useAuth();
   const isAuthenticated = !!user;
 
-  const isActive = (path: string) => pathName === `/${locale}${path}`;
+  const isActive = (path: string) => pathName === path;
 
   const handleLogout = async () => {
     await logout();
@@ -32,7 +31,7 @@ const Navbar = () => {
   const navLinks = [
     { href: '/culture',  label: 'Culture',  icon: <MapPin className="h-5 w-5" /> },
     { href: '/explore',  label: 'Explore',  icon: <Globe className="h-5 w-5" /> },
-    { href: '/events',   label: 'Events',   icon: <CalendarHeart className="h-5 w-5" /> },
+    { href: '/event',   label: 'Events',   icon: <CalendarHeart className="h-5 w-5" /> },
     { href: '/map',      label: 'Map',      icon: <Map className="h-5 w-5" /> },
   ];
 
@@ -41,9 +40,12 @@ const Navbar = () => {
       <div className="flex h-16 px-4 md:px-10 items-center justify-between">
 
         {/* Logo */}
-        <Link href={`/${locale}/`} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+        <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
           <Image src="/logo_svg.svg" alt="AIASEAN Logo" width={40} height={40} />
-          <span className="text-xl font-semibold text-[#4ad4e4]">AIASEAN</span>
+          <span className="text-xl font-semibold tracking-tight">
+            <span className="text-[#FDCD60]">Narrat</span>
+            <span className="text-[#4ad4e4]">AIve</span>
+          </span>   
         </Link>
 
         {/* Desktop Navigation */}
@@ -51,7 +53,7 @@ const Navbar = () => {
           {navLinks.map((link) => (
             <Link
               key={link.label}
-              href={`/${locale}${link.href}`}
+              href={link.href}
               className={`flex items-center gap-1.5 px-4 py-5 text-sm font-medium transition-colors ${
                 isActive(link.href)
                   ? 'bg-[#4ad4e4]/10 text-[#4ad4e4] border-b-2 border-[#4ad4e4]'
@@ -95,12 +97,12 @@ const Navbar = () => {
                       <Link href={`/admin`} className="dark:text-[#d4f1f5] dark:focus:bg-[#4ad4e4]/10">Admin</Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem asChild>
+                  {/* <DropdownMenuItem asChild>
                     <Link href={`/chat`} className="flex w-full items-center justify-between dark:text-[#d4f1f5] dark:focus:bg-[#4ad4e4]/10">
                       <span>Chatbot</span>
                       <Bot className="h-4 w-4 text-[#4ad4e4]" />
                     </Link>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                   <DropdownMenuItem asChild>
                     <Link href={`/profile`} className="flex w-full items-center justify-between dark:text-[#d4f1f5] dark:focus:bg-[#4ad4e4]/10">
                       <span>Profile</span>
@@ -157,7 +159,7 @@ const Navbar = () => {
             {navLinks.map((link) => (
               <Link
                 key={link.label}
-                href={`/${locale}${link.href}`}
+                href={link.href}
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   isActive(link.href)
                     ? 'bg-[#4ad4e4]/10 text-[#4ad4e4] border-l-2 border-[#4ad4e4]'

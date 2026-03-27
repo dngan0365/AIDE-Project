@@ -22,7 +22,7 @@ export default function LoginPage() {
     try {
       const user = await loginUser(email, password);
       await refreshUser();
-      router.push(user.role === "admin" ? "/admin" : "/dashboard");
+      router.push(user.role === "admin" ? "/admin" : "/");
     } catch {
       setError("Invalid email or password.");
     } finally {
@@ -31,7 +31,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-[92vh]">
 
       {/* ── LEFT PANEL ── */}
       <div className="hidden lg:flex lg:flex-1 relative overflow-hidden">
@@ -40,7 +40,7 @@ export default function LoginPage() {
           src="/login.png"
           alt="background"
           fill
-          className="absolute inset-0 w-full h-full object-cover  opacity-50 dark:opacity-30 scale-100 hover:scale-105 transition-transform duration-[8000ms]"
+          className="absolute inset-0 w-full h-full object-cover object-bottom scale-100 hover:scale-105 transition-transform duration-[8000ms]"
         />
       </div>
 

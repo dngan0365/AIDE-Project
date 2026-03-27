@@ -27,7 +27,7 @@ export default function RegisterPage() {
       await registerUser(form.name, form.email, form.password);
       await loginUser(form.email, form.password);
       await refreshUser();
-      router.replace("/dashboard");
+      router.replace("/");
     } catch (err: any) {
       setError(err.response?.data?.detail ?? "Registration failed.");
     } finally {
@@ -36,7 +36,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-[92vh]">
 
       {/* ── LEFT PANEL ── */}
       <div className="hidden lg:flex lg:flex-1 relative overflow-hidden">
@@ -44,7 +44,7 @@ export default function RegisterPage() {
           src="/login.png"
           alt="background"
           fill
-          className="absolute inset-0 w-full h-full object-cover opacity-50 dark:opacity-30 scale-100 hover:scale-105 transition-transform duration-[8000ms]"
+          className="absolute inset-0 w-full h-full object-cover object-bottom scale-100 hover:scale-105 transition-transform duration-[8000ms]"
         />
       </div>
 

@@ -1,13 +1,14 @@
 import datetime
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from app.helper.auth import (hash_password, verify_password, create_token, decode_token, get_current_user)
-from app.db.connect import get_db
-from app.schema.auth_schema import (LoginRequest, RegisterRequest, TokenResponse, UserOut, ResetPasswordRequest)  
+import secrets
+from fastapi import HTTPException
+from app.helper.auth import decode_token, hash_password, verify_password, create_token, get_current_user
+from app.schema.auth_schema import LoginRequest, RefreshRequest, RegisterRequest, ResetPasswordRequest, ForgotPasswordRequest
+from app.helper.email import send_reset_email
+from app.config import settings
 
-# ── Auth routes ───────────────────────────────────────────────
+
 class AuthService:
-    async def register(body: RegisterRequest, db=Depends(get_db)):
+    async def register(self, body: RegisterRequest, db):
         existing = await db.fetchrow("SELECT id FROM users WHERE email=$1", body.email)
         if existing:
             raise HTTPException(status_code=400, detail="Email already registered")
@@ -18,8 +19,8 @@ class AuthService:
         )
         token = create_token({"sub": str(user["id"]), "role": user["role"]})
         return {"access_token": token, "role": user["role"]}
-    
-    async def login(body: LoginRequest, db=Depends(get_db)):
+
+    async def login(self, body: LoginRequest, db):
         user = await db.fetchrow(
             "SELECT id, password_hash, role FROM users WHERE email=$1", body.email
         )
@@ -27,17 +28,35 @@ class AuthService:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         token = create_token({"sub": str(user["id"]), "role": user["role"]})
         return {"access_token": token, "role": user["role"]}
-    
-    async def reset_password(body: ResetPasswordRequest, db=Depends(get_db)):
+
+    async def forgot_password(self, body: ForgotPasswordRequest, db):
+        user = await db.fetchrow("SELECT id FROM users WHERE email=$1", body.email)
+
+        if not user:
+            return {"message": "If that email is registered, a reset link has been sent"}
+
+        reset_token = secrets.token_urlsafe(32)
+        expiry = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+
+        await db.execute(
+            "UPDATE users SET reset_token=$1, reset_token_expiry=$2 WHERE id=$3",
+            reset_token, expiry, user["id"],
+        )
+
+        reset_link = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
+        await send_reset_email(to_email=body.email, reset_link=reset_link)
+
+        return {"message": "If that email is registered, a reset link has been sent"}
+
+    async def reset_password(self, body: ResetPasswordRequest, db):
         user = await db.fetchrow(
-            "SELECT id, reset_token_expiry FROM users WHERE reset_token=$1",
-            body.token
+            "SELECT id, reset_token_expiry FROM users WHERE reset_token=$1", body.token,
         )
         if not user:
             raise HTTPException(400, "Invalid or expired reset token")
 
         expiry = user["reset_token_expiry"]
-        if expiry is None or expiry < datetime.now(datetime.timezone.utc):
+        if expiry is None or expiry < datetime.datetime.now(datetime.timezone.utc):
             raise HTTPException(400, "Reset token has expired")
 
         if len(body.new_password) < 6:
@@ -45,12 +64,21 @@ class AuthService:
 
         hashed = hash_password(body.new_password)
         await db.execute(
-            """UPDATE users
-            SET password_hash=$1, reset_token=NULL, reset_token_expiry=NULL
-            WHERE id=$2""",
-            hashed, user["id"]
+            "UPDATE users SET password_hash=$1, reset_token=NULL, reset_token_expiry=NULL WHERE id=$2",
+            hashed, user["id"],
         )
         return {"message": "Password updated successfully"}
-        
-    async def me(user=Depends(get_current_user)):
+
+    async def me(self, user):  # user is passed in from the router via Depends(get_current_user)
         return {**user, "id": str(user["id"]), "created_at": str(user["created_at"])}
+    
+    async def refresh_token(self, body: RefreshRequest, db):
+        payload = decode_token(body.refresh_token)
+        if not payload:
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+        
+        user_id = payload.get("sub")
+        # optionally verify user still exists in db
+        
+        new_access_token = create_token({"sub": user_id})
+        return {"access_token": new_access_token, "token_type": "bearer"}
