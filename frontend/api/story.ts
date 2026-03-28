@@ -13,6 +13,7 @@ export interface Story {
   country: string;
   culture_type: string;
   created_at: string;
+  content: string;
 }
 
 export interface StoryFilters {
@@ -35,6 +36,13 @@ export interface CreateStoryPayload {
   estimated_minutes: number;
   country: string;
   culture_type: string;
+  content: string;
+}
+
+export interface UserStory {
+  current_scene_id: string;
+  status: "not_started" | "in_progress" | "completed";
+  xp_earned: number;
 }
 
 export type UpdateStoryPayload = Partial<CreateStoryPayload>;
@@ -65,5 +73,13 @@ export async function deleteStory(storyId: string): Promise<void> {
 
 export async function publishStory(storyId: string): Promise<Story> {
   const { data } = await api.put<Story>(`/stories/${storyId}/publish`);
+  return data;
+}
+export async function startStory(storyId: string): Promise<UserStory> {
+  const {data} = await api.post<UserStory>(`/stories/${storyId}/start`);
+  return data;
+}
+export async function checkStartStory(storyId: string): Promise<UserStory> {
+  const { data } = await api.get<UserStory>(`/stories/${storyId}/start`);
   return data;
 }

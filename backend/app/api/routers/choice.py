@@ -22,5 +22,5 @@ async def update_choice(choice_id: str, body: ChoiceCreate, db=Depends(get_db), 
 async def delete_choice(choice_id: str, db=Depends(get_db), current_user=Depends(get_current_user)):
     return await ChoiceService.delete_choice(choice_id, db)
 @router.post("/log/{choice_id}")
-async def log_choice(choice_id: str, db=Depends(get_db), current_user=Depends(get_current_user)):
-    return await ChoiceService.log_choice(current_user["id"], choice_id, db)
+async def log_choice(choice_id: str, story_id: str, db=Depends(get_db), current_user=Depends(get_current_user)):
+    return await ChoiceService.log_choice(current_user["id"], choice_id, story_id, db)

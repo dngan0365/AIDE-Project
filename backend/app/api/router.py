@@ -2,7 +2,8 @@ from fastapi import APIRouter
 from app.api.routers import (auth, admin, 
                              upload_file, challenge,
                              character, user,
-                             story, scene, chat, event)
+                             story, scene, chat, event,
+                             choice)
 
 router = APIRouter(prefix="/api/v1")
 
@@ -16,3 +17,4 @@ router.include_router(story.router)
 router.include_router(scene.router)
 router.include_router(chat.router)
 router.include_router(event.router)
+router.include_router(choice.router)

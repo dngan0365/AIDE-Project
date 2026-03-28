@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 from datetime import datetime, timedelta
@@ -13,6 +13,8 @@ class SceneOut(BaseModel):
     background_image_url: Optional[str] = None
     scene_type: str
     created_at: datetime
+    content: Optional[str] = None
+    reference: Optional[List] = None
 
 class SceneCreate(BaseModel):
     story_id: UUID
@@ -21,6 +23,8 @@ class SceneCreate(BaseModel):
     character_id: Optional[UUID] = None
     background_image_url: Optional[str] = None
     scene_type: str
+    content: Optional[str] = None
+    reference: Optional[List] = None
 
 class SceneUpdate(BaseModel):
     scene_order: int = None
@@ -28,6 +32,8 @@ class SceneUpdate(BaseModel):
     character_id: Optional[UUID] = None
     background_image_url: Optional[str] = None
     scene_type: str = None
+    content: Optional[str] = None
+    reference: Optional[List] = None
 
 class SceneRequest(BaseModel):
     story_id: UUID

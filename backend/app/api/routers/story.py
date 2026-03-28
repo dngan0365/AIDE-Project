@@ -1,7 +1,7 @@
 from app.helper.auth import get_current_user
 from fastapi import APIRouter, Depends, HTTPException
 from app.db.connect import get_db
-from app.schema.story_schema import StoryCreate, StoryOut, StoryUpdate
+from app.schema.story_schema import StoryCreate, StoryOut, StoryUpdate, UserStory
 from app.service.story import StoryService
 
 router = APIRouter(prefix="/stories", tags=["Stories"])
@@ -29,3 +29,19 @@ async def delete_story(story_id: str, db=Depends(get_db)):
 @router.put("/{story_id}/publish", response_model=StoryOut)
 async def publish_story(story_id: str, db=Depends(get_db)):
     return await StoryService.publish_story(story_id, db)
+
+@router.get("/{story_id}/start", response_model=UserStory)
+async def check_start_story(
+    story_id: str,
+    current_user = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    return await StoryService.check_start_story(current_user["id"], story_id, db)
+
+@router.post("/{story_id}/start", response_model=UserStory)
+async def start_story(
+    story_id: str,
+    current_user = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    return await StoryService.start_story(current_user["id"], story_id, db)

@@ -20,7 +20,7 @@ export default function AdminDashboard() {
       label: "Stories",
       count: storiesCount,
       icon: BookOpen,
-      href: "/admin/stories",
+      href: "/admin/story",
       color: "from-[#4ad4e4]/20 to-[#4ad4e4]/5",
       border: "border-[#4ad4e4]/25 dark:border-[#4ad4e4]/20",
       accent: "text-[#4ad4e4]",
@@ -29,7 +29,7 @@ export default function AdminDashboard() {
       label: "Characters",
       count: charactersCount,
       icon: Users,
-      href: "/admin/characters",
+      href: "/admin/character",
       color: "from-[#77DAE6]/20 to-[#77DAE6]/5",
       border: "border-[#77DAE6]/25 dark:border-[#77DAE6]/20",
       accent: "text-[#77DAE6]",
@@ -38,7 +38,7 @@ export default function AdminDashboard() {
       label: "Scenes",
       count: null,
       icon: Layers,
-      href: "/admin/scenes",
+      href: "/admin/scene",
       color: "from-[#4ad4e4]/15 to-[#4ad4e4]/5",
       border: "border-[#4ad4e4]/20",
       accent: "text-[#4ad4e4]",
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
       label: "Challenges",
       count: null,
       icon: Zap,
-      href: "/admin/challenges",
+      href: "/admin/challenge",
       color: "from-[#77DAE6]/15 to-[#77DAE6]/5",
       border: "border-[#77DAE6]/20",
       accent: "text-[#77DAE6]",
@@ -101,10 +101,10 @@ export default function AdminDashboard() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
           {[
-            { label: "+ New Story", href: "/admin/stories?action=new" },
-            { label: "+ New Character", href: "/admin/characters?action=new" },
-            { label: "+ New Scene", href: "/admin/scenes?action=new" },
-            { label: "+ New Challenge", href: "/admin/challenges?action=new" },
+            { label: "+ New Story", href: "/admin/story?action=new" },
+            { label: "+ New Character", href: "/admin/character?action=new" },
+            { label: "+ New Scene", href: "/admin/scene?action=new" },
+            { label: "+ New Challenge", href: "/admin/challenge?action=new" },
           ].map(({ label, href }) => (
             <Link
               key={label}

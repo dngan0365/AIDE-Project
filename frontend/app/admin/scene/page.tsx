@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,10 +10,14 @@ import { listStories, Story } from "@/api/story";
 import { listCharacters, Character } from "@/api/character";
 import { Plus, Pencil, Trash2, Layers, X, Check, Loader2, ChevronDown } from "lucide-react";
 import UploadComponent from "@/components/ui/UploadFile";
+import MDEditor from "@uiw/react-md-editor";
+import "@uiw/react-md-editor/markdown-editor.css";
+import "@uiw/react-markdown-preview/markdown.css";
 
 const EMPTY = (storyId: string): CreateScenePayload => ({
   story_id: storyId, scene_order: 1, narrative_text: "",
   character_id: "", background_image_url: "", scene_type: "narrative",
+  content: "", reference: [],
 });
 
 export default function ScenesPage() {
@@ -26,7 +31,9 @@ export default function ScenesPage() {
   const [form, setForm] = useState<CreateScenePayload>(EMPTY(""));
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
+  const isDark =
+    typeof window !== "undefined" &&
+    document.documentElement.classList.contains("dark");
   useEffect(() => {
     listStories().then(s => { setStories(s); if (s.length > 0) setSelectedStoryId(s[0].id); });
     listCharacters().then(setCharacters);
@@ -44,6 +51,7 @@ export default function ScenesPage() {
     setForm({
       story_id: s.story_id, scene_order: s.scene_order, narrative_text: s.narrative_text,
       character_id: s.character_id, background_image_url: s.background_image_url, scene_type: s.scene_type,
+      content: (s as any).content ?? "", reference: (s as any).reference ?? [],
     });
     setShowForm(true);
   };
@@ -51,11 +59,38 @@ export default function ScenesPage() {
   const handleSubmit = async () => {
     setSaving(true);
     try {
-      if (editing) await updateScene(editing.id, form);
-      else await createScene(form);
+      const payload = {
+        ...form,
+
+        // ✅ đảm bảo UUID hợp lệ
+        story_id: form.story_id || selectedStoryId,
+        character_id: form.character_id || "",
+
+        // ✅ tránh undefined / null string
+        narrative_text: form.narrative_text || "",
+
+        // ✅ clean reference (array only, remove empty)
+        reference: Array.isArray(form.reference)
+          ? form.reference.filter((r) => r && r.trim() !== "")
+          : [],
+
+        // ✅ optional fields
+        content: form.content || "",
+        background_image_url: form.background_image_url || "",
+      };
+
+      console.log("🚀 payload:", payload); // debug
+
+      if (editing) await updateScene(editing.id, payload);
+      else await createScene(payload);
+
       setShowForm(false);
       listScenes(selectedStoryId).then(setScenes);
-    } finally { setSaving(false); }
+    } catch (err: any) {
+      console.error("❌ ERROR:", err?.response?.data || err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -283,6 +318,75 @@ export default function ScenesPage() {
                   onChange={e => setForm(f => ({ ...f, narrative_text: e.target.value }))}
                   className={`${inputCls} resize-none`}
                 />
+              </div>
+              {/* Content (Markdown) */}
+              <div>
+                <label className={labelCls}>Content</label>
+
+                <div
+                  data-color-mode={isDark ? "dark" : "light"}
+                  className="border border-slate-200 dark:border-[#1e2130] rounded-lg overflow-hidden"
+                >
+                  <MDEditor
+                    value={form.content}
+                    onChange={(val) =>
+                      setForm((f) => ({ ...f, content: val || "" }))
+                    }
+                    height={300}
+                    preview="edit"
+                    previewOptions={{
+                      className: "prose dark:prose-invert max-w-none p-4",
+                    }}
+                  />
+                </div>
+              </div>
+              {/* Reference List */}
+              <div>
+                <label className={labelCls}>Reference</label>
+
+                <div className="space-y-2">
+                  {form.reference.map((ref: string, index: number) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        value={ref}
+                        onChange={(e) => {
+                          const newRefs = [...form.reference];
+                          newRefs[index] = e.target.value;
+                          setForm((f) => ({ ...f, reference: newRefs }));
+                        }}
+                        placeholder={`Reference ${index + 1}`}
+                        className={inputCls}
+                      />
+
+                      <button
+                        aria-label="Remove reference"
+                        type="button"
+                        onClick={() => {
+                          const newRefs = form.reference.filter((_, i) => i !== index);
+                          setForm((f) => ({ ...f, reference: newRefs }));
+                        }}
+                        className="px-3 text-red-400 hover:text-red-300"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Add button */}
+                  <button
+                    aria-label="Add reference"
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        reference: [...f.reference, ""],
+                      }))
+                    }
+                    className="text-xs text-primary hover:underline"
+                  >
+                    + Add reference
+                  </button>
+                </div>
               </div>
               <UploadComponent />
             </div>

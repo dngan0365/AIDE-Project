@@ -42,7 +42,7 @@ export default function ChallengePage() {
 
     setSubmitting(true);
     try {
-      await submitChallengeAttempt(challenge.id, answerGiven);
+      await submitChallengeAttempt(challenge.id, culture_id, answerGiven);
       const isCorrect =
         answerGiven.trim().toLowerCase() === challenge.correct_answer.trim().toLowerCase();
       const xpEarned = isCorrect ? 50 : 0;

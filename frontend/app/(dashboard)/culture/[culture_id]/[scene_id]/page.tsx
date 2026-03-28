@@ -4,10 +4,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getScene, Scene, getSceneChoices, SceneChoice } from "@/api/scene";
+import { getScene, Scene, getSceneChoices, SceneChoice, submitSceneChoice, SceneChoiceSubmit } from "@/api/scene";
 import { getCharacter, Character } from "@/api/character";
 import { listChallengesForScene, Challenge } from "@/api/challenge";
 import ChatBot from "@/components/chat/ChatBot";
+import MarkdownDisplay from "@/components/markdown/MarkdownDisplay";
 
 export default function ScenePage() {
   const { culture_id, scene_id } = useParams<{ culture_id: string; scene_id: string }>();
@@ -21,6 +22,7 @@ export default function ScenePage() {
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [textVisible, setTextVisible] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -47,18 +49,32 @@ export default function ScenePage() {
     setSelectedChoice(choiceId);
   };
 
-  const handleReveal = () => {
+  const handleReveal = async () => {
     if (!selectedChoice) return;
+
+    const choice = choices.find((c) => c.id === selectedChoice);
+    if (!choice) return;
+
+    await submitSceneChoice(choice.id, culture_id);
+
     setRevealed(true);
   };
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     const choice = choices.find((c) => c.id === selectedChoice);
-    if (choice?.next_scene_id) {
+    if (!choice) return;
+
+    setSubmitting(true);
+    try {
+      await submitSceneChoice(choice.id, culture_id );
+
       router.push(`/culture/${culture_id}/${choice.next_scene_id}`);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
     }
   };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-[#060608] flex items-center justify-center transition-colors duration-300">
@@ -178,6 +194,38 @@ export default function ScenePage() {
             <p className="text-black/85 dark:text-white/90 text-lg sm:text-xl md:text-2xl leading-relaxed tracking-wide">
               {scene.narrative_text}
             </p>
+            {scene.content && (
+              <div className="mt-6 sm:mt-8 bg-white/80 dark:bg-[#13121a]/80 border border-black/10 dark:border-white/10 rounded-xl p-5 sm:p-6 backdrop-blur-sm">
+                
+                <h3 className="font-['Cinzel'] text-xs tracking-[0.2em] text-primary/60 mb-3">
+                  CULTURAL INSIGHT
+                </h3>
+
+                <MarkdownDisplay value={scene.content} />
+              </div>
+            )}
+            {scene.reference && scene.reference.length > 0 && (
+              <div className="mt-6 sm:mt-8">
+                
+                <h3 className="font-['Cinzel'] text-xs tracking-[0.2em] text-primary/60 mb-3">
+                  REFERENCES
+                </h3>
+
+                <div className="space-y-2">
+                  {scene.reference.map((ref, i) => (
+                    <a
+                      key={i}
+                      href={ref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-sm text-cyan-600 dark:text-cyan-400 hover:underline break-all"
+                    >
+                      [{i + 1}] {ref}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -266,6 +314,7 @@ export default function ScenePage() {
                 </button>
               ) : (
                 <button
+                  disabled={submitting}
                   onClick={handleProceed}
                   className="flex-1 sm:flex-none px-6 sm:px-8 py-3 bg-primary text-black font-['Cinzel'] tracking-widest text-xs sm:text-sm font-bold rounded-xl hover:bg-[#77DAE6] transition-all hover:shadow-[0_0_30px_rgba(74,212,228,0.35)]"
                 >
@@ -300,7 +349,7 @@ export default function ScenePage() {
           </div>
         )}
       </div>
-      {scene && scene.scene_type === "dialogue" && (
+      {scene && (scene.scene_type === "dialogue" || scene.scene_type === "choice") && (
       <ChatBot
         sceneId={scene.id}
         characterId={scene.character_id}

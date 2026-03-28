@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, BarChart3, Users, FileText, Film, CircleCheckBig, CalendarCheck2 } from "lucide-react";
+import { Settings, BarChart3, Users, FileText, BookSearch, Film, CircleCheckBig, CalendarCheck2 } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: BarChart3, exact: true },
   { href: "/admin/story", label: "Story", icon: FileText, exact: false },
   { href: "/admin/scene", label: "Scene", icon: Film, exact: false },
+  { href: "/admin/choice", label: "Choice", icon: BookSearch, exact: false },
   { href: "/admin/challenge", label: "Challenge", icon: CircleCheckBig, exact: false },
   { href: "/admin/event", label: "Event", icon: CalendarCheck2, exact: false }
 ];

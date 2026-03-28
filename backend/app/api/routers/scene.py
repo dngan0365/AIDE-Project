@@ -39,13 +39,15 @@ async def get_scene_user_choices(scene_id: str, user_id: str, db=Depends(get_db)
 
 @router.get("/{scene_id}", response_model=SceneOut)
 async def get_scene(scene_id: str, db=Depends(get_db)):
-    return await SceneService.get_scene(scene_id, db)
+    return await SceneService.get_scene(scene_id,  db)
 
+@router.put("/advance/{scene_id}")
+async def advance_scene(scene_id: str, story_id:str, db=Depends(get_db), current_user=Depends(get_current_user)):
+    return await SceneService.advance_scene(scene_id, user_id=current_user["id"], story_id=story_id, db=db)
 
 @router.post("/", response_model=SceneOut)
 async def create_scene(body: SceneCreate, db=Depends(get_db), current_user=Depends(get_current_user)):
     return await SceneService.create_scene(body, db)
-
 
 @router.put("/{scene_id}", response_model=SceneOut)
 async def update_scene(

@@ -10,11 +10,21 @@ class ChoiceOut(BaseModel):
     choice_text: str
     next_scene_id: UUID
     xp_reward: int
-    description: str
+    next_scene_id: UUID
+
+class ChoiceCreate(BaseModel):
+    scene_id: UUID
+    choice_text: str
     next_scene_id: UUID
     xp_reward: int
-    created_at: datetime
 
+class ChoiceUpdate(BaseModel):
+    choice_text: str = None
+    next_scene_id: UUID = None
+    xp_reward: int = None
+
+class ChoiceRequest(BaseModel):
+    scene_id: UUID
 class ChoiceLog(BaseModel):
     user_id: UUID
     choice_id: UUID

@@ -28,9 +28,9 @@ async def delete_challenge(challenge_id: str, db=Depends(get_db)):
     return await ChallengeService.delete_challenge(challenge_id, db)
 
 @router.post("/{challenge_id}/attempt")
-async def submit_challenge_attempt(challenge_id: str, answer_given: str, current_user=Depends(get_current_user), db=Depends(get_db)):
-    return await ChallengeService.submit_attempt(current_user["id"], challenge_id, answer_given, db)    
+async def submit_challenge_attempt(challenge_id: str, story_id: str, answer_given: str, current_user=Depends(get_current_user), db=Depends(get_db)):
+    return await ChallengeService.submit_attempt(current_user["id"], challenge_id, story_id, answer_given, db)    
 
 @router.get("/{challenge_id}/attempts")
-async def get_user_attempts(challenge_id: str, current_user=Depends(get_current_user), db=Depends(get_db)):
+async def get_user_attempts(challenge_id: str, story_id: str, current_user=Depends(get_current_user), db=Depends(get_db)):
     return await ChallengeService.get_user_attempts(current_user["id"], challenge_id, db)

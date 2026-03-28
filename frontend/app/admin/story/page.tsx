@@ -7,11 +7,12 @@ import {
 } from "@/api/story";
 import { Plus, Pencil, Trash2, Globe, BookOpen, X, Check, Loader2 } from "lucide-react";
 import UploadComponent from "@/components/ui/UploadFile";
+import MDEditor from "@uiw/react-md-editor";
 
 const EMPTY: CreateStoryPayload = {
   title: "", culture_topic: "", description: "", cover_image_url: "",
   difficulty: 1, estimated_time: "", is_published: false,
-  estimated_minutes: 0, country: "", culture_type: "",
+  estimated_minutes: 0, country: "", culture_type: "", content: "",
 };
 
 export default function StoriesPage() {
@@ -22,6 +23,9 @@ export default function StoriesPage() {
   const [form, setForm] = useState<CreateStoryPayload>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const isDark =
+    typeof window !== "undefined" &&
+    document.documentElement.classList.contains("dark");
 
   const load = () => {
     setLoading(true);
@@ -36,7 +40,7 @@ export default function StoriesPage() {
     setForm({
       title: s.title, culture_topic: s.culture_topic, description: s.description,
       cover_image_url: s.cover_image_url, difficulty: s.difficulty, estimated_time: s.estimated_time,
-      is_published: s.is_published, estimated_minutes: s.estimated_minutes, country: s.country, culture_type: s.culture_type,
+      is_published: s.is_published, estimated_minutes: s.estimated_minutes, country: s.country, culture_type: s.culture_type, content: s.content || "",
     });
     setShowForm(true);
   };
@@ -288,6 +292,27 @@ export default function StoriesPage() {
               {field("Estimated Minutes", "estimated_minutes", "number")}
               {field("Difficulty", "difficulty", "number")}
               {field("Published", "is_published", "checkbox")}
+              {/* Content (Markdown) */}
+              <div>
+                <label className="block text-[10px] text-slate-500 dark:text-[#4a5060] tracking-widest uppercase mb-1">Content</label>
+
+                <div
+                  data-color-mode={isDark ? "dark" : "light"}
+                  className="border border-slate-200 dark:border-[#1e2130] rounded-lg overflow-hidden"
+                >
+                  <MDEditor
+                    value={form.content}
+                    onChange={(val) =>
+                      setForm((f) => ({ ...f, content: val || "" }))
+                    }
+                    height={300}
+                    preview="edit"
+                    previewOptions={{
+                      className: "prose dark:prose-invert max-w-none p-4",
+                    }}
+                  />
+                </div>
+              </div>
               <UploadComponent />
             </div>
             <div className="px-5 sm:px-6 py-4 border-t border-slate-200 dark:border-[#1e2130] flex gap-3">

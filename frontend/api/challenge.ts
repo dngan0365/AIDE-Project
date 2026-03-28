@@ -44,13 +44,15 @@ export async function deleteChallenge(challengeId: string): Promise<void> {
   await api.delete(`/challenges/${challengeId}`);
 }
 
-export async function submitChallengeAttempt(challengeId: string, answerGiven: string): Promise<void> {
+export async function submitChallengeAttempt(challengeId: string, storyId: string, answerGiven: string): Promise<void> {
   await api.post(`/challenges/${challengeId}/attempt`, null, {
-    params: { answer_given: answerGiven },
-  });
+      params: { story_id: storyId, answer_given: answerGiven,},
+    });
 }
 
-export async function getUserAttempts(challengeId: string): Promise<unknown> {
-  const { data } = await api.get(`/challenges/${challengeId}/attempts`);
+export async function getUserAttempts(challengeId: string, storyId: string): Promise<unknown> {
+  const { data } = await api.get(`/challenges/${challengeId}/attempts`, {
+    params: { story_id: storyId }
+  });
   return data;
 }

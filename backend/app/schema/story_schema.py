@@ -17,6 +17,7 @@ class StoryOut(BaseModel):
     country: str
     culture_type: str
     created_at: datetime
+    content: Optional[str] = None
 
 class StoryCreate(BaseModel):
     title: str
@@ -29,6 +30,7 @@ class StoryCreate(BaseModel):
     estimated_minutes: int
     country: str
     culture_type: str
+    content: Optional[str] = None
 
 class StoryUpdate(BaseModel):
     title: str = None
@@ -41,3 +43,9 @@ class StoryUpdate(BaseModel):
     estimated_minutes: int = None
     country: str = None
     culture_type: str = None
+    content: Optional[str] = None
+
+class UserStory(BaseModel):
+    current_scene_id: Optional[UUID] = None
+    status: str
+    xp_earned: int

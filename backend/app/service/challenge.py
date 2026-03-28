@@ -9,10 +9,41 @@ import json
 class ChallengeService:
 
     @staticmethod
-    def _parse_options(row):
-        if row and isinstance(row.get("options"), str):
-            row["options"] = json.loads(row["options"])
-        return row
+    def _parse_options(row: dict):
+        options = row.get("options")
+
+        # Case 1: None
+        if not options:
+            parsed_options = []
+
+        # Case 2: already dict
+        elif isinstance(options, dict):
+            parsed_options = list(options.values())
+
+        # Case 3: string (JSON string)
+        elif isinstance(options, str):
+            try:
+                parsed = json.loads(options)
+                if isinstance(parsed, dict):
+                    parsed_options = list(parsed.values())
+                elif isinstance(parsed, list):
+                    parsed_options = parsed
+                else:
+                    parsed_options = [str(parsed)]
+            except:
+                parsed_options = [options]  # fallback
+
+        # Case 4: already list
+        elif isinstance(options, list):
+            parsed_options = options
+
+        else:
+            parsed_options = []
+
+        return {
+            **row,
+            "options": parsed_options
+        }
 
     @staticmethod
     async def list_challenges_for_scene(scene_id: str, db) -> list[ChallengeOut]:
@@ -20,7 +51,6 @@ class ChallengeService:
             "SELECT * FROM challenges WHERE scene_id = $1",
             scene_id
         )
-
         return [
             ChallengeOut(**ChallengeService._parse_options(dict(r)))
             for r in rows
@@ -32,10 +62,8 @@ class ChallengeService:
             "SELECT * FROM challenges WHERE id = $1",
             challenge_id
         )
-
         if not row:
             raise HTTPException(status_code=404, detail="Challenge not found")
-
         row = ChallengeService._parse_options(dict(row))
         return ChallengeOut(**row)
 
@@ -55,7 +83,6 @@ class ChallengeService:
             body.xp_reward or 0,
             body.max_attempt or 3,
         )
-
         row = ChallengeService._parse_options(dict(row))
         return ChallengeOut(**row)
 
@@ -65,12 +92,10 @@ class ChallengeService:
             "SELECT * FROM challenges WHERE id = $1",
             challenge_id
         )
-
         if not existing:
             raise HTTPException(status_code=404, detail="Challenge not found")
 
         fields = body.dict(exclude_unset=True)
-
         if "options" in fields and fields["options"] is not None:
             fields["options"] = json.dumps(fields["options"])
 
@@ -79,13 +104,11 @@ class ChallengeService:
             return ChallengeOut(**existing)
 
         set_clause = ", ".join(f"{k} = ${i+2}" for i, k in enumerate(fields))
-
         row = await db.fetchrow(
             f"UPDATE challenges SET {set_clause} WHERE id = $1 RETURNING *",
             challenge_id,
             *fields.values(),
         )
-
         row = ChallengeService._parse_options(dict(row))
         return ChallengeOut(**row)
 
@@ -95,30 +118,26 @@ class ChallengeService:
             "DELETE FROM challenges WHERE id = $1",
             challenge_id
         )
-
         if result == "DELETE 0":
             raise HTTPException(status_code=404, detail="Challenge not found")
-
         return {"message": "Challenge deleted"}
 
     @staticmethod
-    async def submit_attempt(user_id: str, challenge_id: str, answer_given: str, db) -> ChallengeAttempt:
+    async def submit_attempt(user_id: str, challenge_id: str, story_id: str, answer_given: str, db) -> ChallengeAttempt:
         challenge = await db.fetchrow(
             "SELECT * FROM challenges WHERE id = $1",
             challenge_id
         )
-
         if not challenge:
             raise HTTPException(status_code=404, detail="Challenge not found")
 
         attempts = await db.fetchval(
             """
             SELECT COUNT(*) FROM challenge_attempts
-            WHERE user_id=$1 AND challenge_id=$2
+            WHERE user_id = $1 AND challenge_id = $2
             """,
             user_id, challenge_id,
         )
-
         if attempts >= challenge["max_attempt"]:
             raise HTTPException(status_code=429, detail="Max attempts reached")
 
@@ -126,7 +145,6 @@ class ChallengeService:
             answer_given.strip().lower()
             == challenge["correct_answer"].strip().lower()
         )
-
         xp_rewarded = challenge["xp_reward"] if is_correct else 0
 
         await db.execute(
@@ -139,14 +157,39 @@ class ChallengeService:
         )
 
         if is_correct:
-            await db.execute(
+            # FIX: check whether this scene has a next scene via choices.
+            # If no onward choice exists, this is the final scene → mark story completed.
+            # Also do XP + status in one atomic UPDATE to keep user_progress consistent.
+            has_next = await db.fetchval(
                 """
-                UPDATE user_progress
-                SET xp_earned = xp_earned + $1
-                WHERE user_id = $2
+                SELECT COUNT(*) FROM choices
+                WHERE scene_id = $1 AND next_scene_id IS NOT NULL
                 """,
-                xp_rewarded, user_id,
+                challenge["scene_id"],
             )
+
+            if has_next == 0:
+                # Final scene — complete the story atomically
+                await db.execute(
+                    """
+                    UPDATE user_progress
+                    SET xp_earned    = xp_earned + $1,
+                        status       = 'completed',
+                        completed_at = NOW()
+                    WHERE user_id = $2 AND story_id = $3
+                    """,
+                    xp_rewarded, user_id, story_id,
+                )
+            else:
+                # Mid-story challenge — just award XP, scene advances via choice
+                await db.execute(
+                    """
+                    UPDATE user_progress
+                    SET xp_earned = xp_earned + $1
+                    WHERE user_id = $2 AND story_id = $3
+                    """,
+                    xp_rewarded, user_id, story_id,
+                )
 
         return ChallengeAttempt(
             user_id=user_id,
@@ -167,5 +210,4 @@ class ChallengeService:
             """,
             user_id, challenge_id,
         )
-
         return [ChallengeAttempt(**dict(r)) for r in rows]

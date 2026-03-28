@@ -4,8 +4,8 @@ import "./globals.css";
 import { Crimson_Pro } from 'next/font/google';
 
 export const metadata = {
-  title: "AIASEAN",
-  description: "AIASEAN - Your Gateway to AI-Powered Event Management in Southeast Asia",
+  title: "NarratAIve",
+  description: "NarratAIve - Your Gateway to AI-Powered Event Management in Southeast Asia",
 };
 
 const inter = Crimson_Pro({

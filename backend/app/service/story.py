@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from app.schema.story_schema import (StoryOut, StoryCreate, StoryUpdate)
+from app.schema.story_schema import (StoryOut, StoryCreate, StoryUpdate, UserStory)
 from typing import List, Optional
 
 
@@ -42,6 +42,7 @@ class StoryService:
     @staticmethod
     async def get_story(story_id: str, db) -> StoryOut:
         row = await db.fetchrow("SELECT * FROM stories WHERE id = $1", story_id)
+        
         if not row:
             raise HTTPException(status_code=404, detail="Story not found")
         return StoryOut(**row)
@@ -95,3 +96,70 @@ class StoryService:
         if result == "UPDATE 0":
             raise HTTPException(status_code=404, detail="Story not found")
         return {"message": "Story published"}
+    
+    @staticmethod
+    async def start_story(user_id: str, story_id: str, db):
+        # Check story exists and is published
+        story = await db.fetchrow(
+            "SELECT id FROM stories WHERE id = $1 AND is_published = true",
+            story_id
+        )
+        if not story:
+            raise HTTPException(status_code=404, detail="Story not found")
+ 
+        # Check if progress already exists — return current state so client can resume
+        existing = await db.fetchrow(
+            "SELECT id, current_scene_id, status FROM user_progress WHERE user_id = $1 AND story_id = $2",
+            user_id, story_id
+        )
+        if existing:
+            return UserStory(
+                current_scene_id=existing["current_scene_id"],
+                status=existing["status"],
+                xp_earned=0
+            )
+ 
+        # FIX: fetch the first scene to set as the starting point (was NULL before)
+        first_scene = await db.fetchrow(
+            "SELECT id FROM scenes WHERE story_id = $1 ORDER BY scene_order ASC LIMIT 1",
+            story_id
+        )
+        if not first_scene:
+            raise HTTPException(status_code=404, detail="Story has no scenes yet")
+ 
+        first_scene_id = first_scene["id"]
+ 
+        await db.execute(
+            """
+            INSERT INTO user_progress (
+                user_id,
+                story_id,
+                current_scene_id,
+                status,
+                xp_earned
+            )
+            VALUES ($1, $2, $3, 'in_progress', 0)
+            """,
+            user_id, story_id, first_scene_id
+        )
+ 
+        return UserStory(
+            current_scene_id=first_scene_id,
+            status="in_progress",
+            xp_earned=0
+        )
+    @staticmethod
+    async def check_start_story(user_id: str, story_id: str, db):
+        progress = await db.fetchrow(
+            """
+            SELECT id, current_scene_id, status, xp_earned
+            FROM user_progress
+            WHERE user_id = $1 AND story_id = $2
+            """,
+            user_id, story_id
+        )
+
+        if not progress:
+            raise HTTPException(status_code=404, detail="Progress not found")
+        return UserStory(**progress)
+    

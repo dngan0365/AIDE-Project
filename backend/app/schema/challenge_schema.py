@@ -14,7 +14,7 @@ class ChallengeOut(BaseModel):
     id: UUID
     scene_id: UUID
     type: QuestionType
-    options: Optional[List[str]] = None   
+    options: Optional[List[Any]] = None   
     correct_answer: str
     max_attempt: int
     created_at: Optional[datetime] = None
@@ -22,13 +22,13 @@ class ChallengeOut(BaseModel):
 class ChallengeCreate(BaseModel):
     scene_id: UUID
     type: QuestionType
-    options: Optional[Dict[str, Any]]   
+    options: Optional[List[Any]] = None   
     correct_answer: str
     max_attempt: int
 
 class ChallengeUpdate(BaseModel):
     type: Optional[QuestionType] = None
-    options: Optional[Dict[str, Any]] = None   
+    options: Optional[List[Any]] = None   
     correct_answer: Optional[str] = None
     max_attempt: Optional[int] = None
 
